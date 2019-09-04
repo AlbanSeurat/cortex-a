@@ -19,13 +19,38 @@
 //!
 //! When taking an exception to EL1, holds the status of the exception.
 
-use register::cpu::RegisterReadWrite;
+use register::{cpu::RegisterReadWrite, register_bitfields};
+
+register_bitfields! {u32,
+    ESR_EL1 [
+
+        /// Exception Class.
+        EC OFFSET(26) NUMBITS(6) [
+            InstructionAbortLowerLevel = 0b100000,
+            InstructionAbort = 0b100001
+        ],
+
+        /// Instruction Length. The possible values of this bit are:
+        ///
+        /// 0 16bits.
+        /// 1 32bits.
+        IL OFFSET(25) NUMBITS(1) [
+            WordSize = 0,
+            DWordSize = 1
+        ],
+
+        /// Instruction Specific Syndrome.
+        ISS OFFSET(0) NUMBITS(25) []
+
+    ]
+}
+
 
 pub struct Reg;
 
-impl RegisterReadWrite<u64, ()> for Reg {
-    sys_coproc_read_raw!(u64, "ESR_EL1");
-    sys_coproc_write_raw!(u64, "ESR_EL1");
+impl RegisterReadWrite<u32, ESR_EL1::Register> for Reg {
+    sys_coproc_read_raw!(u32, "ESR_EL1");
+    sys_coproc_write_raw!(u32, "ESR_EL1");
 }
 
 pub static ESR_EL1: Reg = Reg {};
